@@ -1,4 +1,4 @@
-from tkinter import Tk, BOTH, Canvas
+from tkinter import Tk, BOTH, Canvas, Scrollbar, Entry
 import time
 import random
 
@@ -11,6 +11,7 @@ class Window:
         self.canvas.pack(fill=BOTH, expand=1)
         self.running = False
         self.__root.protocol('WM_DELETE_WINDOW', self.close)
+        self.widgets = {}
     
     def redraw(self):
         self.__root.update_idletasks()
@@ -48,5 +49,33 @@ class Button:
         self.win.canvas.tag_bind(self.text_id, "<Button-1>", on_click)
 
 
+class CustomScrollbar:
+    def __init__(self, canvas, orientation, pos_x, pos_y, size_x, size_y):
+        self.canvas = canvas
+        self.orientation = orientation
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.size_x = size_x
+        self.size_y = size_y
 
 
+    def draw(self):
+        self.scrollbar = Scrollbar(self.canvas, orient=self.orientation)
+        self.scrollbar.place(x=self.pos_x, y=self.pos_y, width=self.size_x, height=self.size_y)
+    
+    def set_command(self, command):
+        self.scrollbar.config(command=command)
+    
+    def get_scrollbar(self):
+        return self.scrollbar
+    
+    def destroy(self):
+        self.scrollbar.destroy()
+
+class CustomEntry:
+    def __init__(self, canvas, pos_x, pos_y, size_x, size_y):
+        self.entry = Entry(canvas)
+        self.entry.place(x=pos_x, y=pos_y, width=size_x, height=size_y)
+
+    def destroy(self):
+        self.entry.destroy()

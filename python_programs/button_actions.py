@@ -1,5 +1,5 @@
 import subprocess
-from graphics import Window, Button
+from graphics import *
 
 def draw_buttons(win):
     invitations = Button(win, 'Invitations', "https://objkt.com/collections/KT1MFqZPJFhg5rUcW1VFxKrEKASMfsVg8Ukc",
@@ -37,12 +37,32 @@ def redraw_forge(win):
 
 def redraw_collection(win):
     win.canvas.delete('all')
-    back_button = Button(win, 'Go back', 'Some link', 700, 550, (85, 35))
+    
+    #Scrollbar
+    scrollbar = CustomScrollbar(win.canvas, "vertical", 700, 15, 85, 485)
+    scrollbar.draw()
+    scrollbar.set_command(win.canvas.yview)
+    win.canvas.config(yscrollcommand=scrollbar.get_scrollbar().set)
+    win.widgets['scrollbar'] = scrollbar
+
+
+    #Search bar
+    search_entry = CustomEntry(win.canvas, 15, 15, 630, 30)
+    win.widgets['search_entry'] = search_entry
+
+    #Clear button
+    clear_button = Button(win, 'Clear', 'Some link', 645, 15, (50, 30))
+    clear_button.draw()
+
+    back_button = Button(win, 'Go back', 'Some link', 700, 500, (85, 85))
     back_button.draw()
     back_button.bind_click(lambda: redraw_back_main_page(win))
     pass    
 
 def redraw_back_main_page(win):
+    for widget in list(win.widgets.values()):
+        widget.destroy()
+    win.widgets.clear()
     win.canvas.delete('all')
     draw_buttons(win)
     pass
