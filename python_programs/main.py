@@ -1,4 +1,3 @@
-import os
 from graphics import Window
 from button_actions import *
 

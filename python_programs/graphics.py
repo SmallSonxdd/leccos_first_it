@@ -1,4 +1,4 @@
-from tkinter import Tk, BOTH, Canvas, Scrollbar, Entry
+from tkinter import Tk, BOTH, Canvas, Scrollbar, Entry, Frame
 import time
 import random
 
@@ -26,7 +26,43 @@ class Window:
     def close(self):
         self.running = False
 
-class Button:
+class CustomFrame:
+    def __init__(self, parent, pos_x, pos_y, width, height, scrollable=False):
+        self.parent = parent
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.width = width
+        self.height = height
+        self.scrollable = scrollable
+        
+        self.frame = Frame(self.parent, width=self.width, height=self.height)
+        self.frame.place(x=self.pos_x, y=self.pos_y)
+
+        if self.scrollable:
+            self.canvas = Canvas(self.frame, width=self.width, height=self.height)
+            self.canvas.pack(side='left', fill='both', expand=True)
+            self.inner_frame = Frame(self.canvas)
+            self.canvas.create_window((0,0), window=self.inner_frame, anchor='nw')
+            self.canvas.configure(scrollregion=(0, 0, self.width, self.height))
+            self.inner_frame.bind("<Configure>", self.on_frame_configure)
+        
+        else:
+            self.canvas = None
+            self.inner_frame = self.frame
+    
+    def on_frame_configure(self, event):
+        if self.scrollable:
+            self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+
+    def add_widget(self, widget, **kwargs):
+        widget.place(**kwargs)
+        
+
+    def destroy(self):
+        self.frame.destroy()
+        
+
+class CustomButton:
     def __init__(self, win, type_of_button, link, pos_x, pos_y, size):
         self.win = win
         self.type_of_button = type_of_button
@@ -79,3 +115,28 @@ class CustomEntry:
 
     def destroy(self):
         self.entry.destroy()
+
+    def delete(self):
+        self.entry.delete(0, len(self.entry.get()))
+
+class GridWidget:
+    def __init__(self, canvas, pos_x, pos_y, cell_width, cell_height):
+        self.canvas = canvas
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.cell_width = cell_width
+        self.cell_height = cell_height
+
+        self.rows = 0
+        self.cols = 0
+        self.grid_items = []
+    
+    def add_single_item(self, item):
+        self.grid_items.append(item)
+
+    def add_multiple_items(self, list_of_items):
+        self.grid_items.extend(list_of_items)
+
+    def destroy(self):
+        pass #maybe something
+
