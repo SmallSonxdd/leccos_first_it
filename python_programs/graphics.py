@@ -126,9 +126,12 @@ class GridWidget:
         self.pos_y = pos_y
         self.cell_width = cell_width
         self.cell_height = cell_height
+        
+        self.width = canvas.winfo_width()
+        self.height = canvas.winfo_height()
 
         self.rows = 0
-        self.cols = 0
+        self.cols = 3
         self.grid_items = []
     
     def add_single_item(self, item):
@@ -137,6 +140,99 @@ class GridWidget:
     def add_multiple_items(self, list_of_items):
         self.grid_items.extend(list_of_items)
 
-    def destroy(self):
-        pass #maybe something
+    # Forward create_rectangle to the internal canvas
+    def create_rectangle(self, *args, **kwargs):
+        return self.canvas.create_rectangle(*args, **kwargs)
 
+    # Forward create_text to the internal canvas
+    def create_text(self, *args, **kwargs):
+        return self.canvas.create_text(*args, **kwargs)
+
+    # Forward tag_bind to the internal canvas
+    def tag_bind(self, tag, event, callback):
+        self.canvas.tag_bind(tag, event, callback)
+
+    def draw(self):        
+        length = len(self.grid_items)
+        self.rows = (length + self.cols - 1) // self.cols
+        for index, item in enumerate(self.grid_items):
+            row = index // self.cols  # Calculate row number
+            col = index % self.cols  # Calculate column number
+
+            x = self.pos_x + col * self.cell_width
+            y = self.pos_y + row * self.cell_height
+
+            item.draw(x, y)
+    def itemconfig(self, item_id, **kwargs):
+        """
+        Update the properties of an item on the canvas.
+        :param item_id: The ID of the canvas item to configure.
+        :param kwargs: Key-value pairs of properties to update.
+        """
+        self.canvas.itemconfig(item_id, **kwargs)    
+    
+    def update_dimensions(self):
+        self.width = self.canvas.winfo_width()
+        self.height = self.canvas.winfo_height()
+    
+    
+class TokenWidget:
+    #grid is object of GridWidget class and token is an entry in dictionary of culture/open_world -> 
+    # tuple(list of attributes, token code, status, random values)
+    def __init__(self, grid, size, token): 
+        self.grid = grid
+        self.size = size
+        self.token = token
+
+        self.square_id = None
+        self.name_id = None
+        self.status_id = None
+        self.code_id = None
+        self.tooltip_id = None
+        self.text_id = None
+
+    def draw(self, x, y):
+        self.square_id = self.grid.create_rectangle(x, y, x + self.size, y + self.size, fill='lightgrey', outline='black')
+
+        self.grid.tag_bind(self.square_id, "<Enter>", self.on_hover)
+        self.grid.tag_bind(self.square_id, "<Leave>", self.on_hover_exit)
+
+        name_text = self.token.key
+        self.name_id = self.grid.create_rectangle(x, y + self.size, x + self.size, y + self.size + 20, fill='lightblue', outline='black')
+        self.grid.create_text(x + self.size/2, y + self.size + 10, text=f'Name: {name_text}', fill='black')
+        if self.token.status == 'unused':
+            status_color = 'green'
+            status_text = 'Activate'
+        elif self.token.status == 'used':
+            status_color = 'red'
+            status_text = 'Deactivated'
+        else:
+            raise Exception('Invalid token status')
+        self.status_id = self.grid.create_rectangle(x, y + self.size + 20, x + self.size, y + self.size + 40, fill='lightblue', outline='black')
+        self.grid.create_text(x + self.size/2, y + self.size + 30, text=f'Status: {status_text}', fill=status_color)
+        self.code_id = self.grid.create_rectangle(x, y + self.size + 40, x + self.size, y + self.size + 60, fill='lightblue', outline='black')
+        self.grid.create_text(x + self.size/2, y + self.size + 50, text=f'Code: {self.token.code}', fill='black')
+    
+    def on_hover(self, event):
+        self.grid.itemconfig(self.square_id, fill="yellow")
+    
+    def on_hover_exit(self, event):
+        self.grid.itemconfig(self.square_id, fill="lightgrey")
+
+
+class Token:
+    def __init__(self, key, token_population):
+        self.key = key
+        self.attributes = token_population[1][key][0]
+        self.type = token_population[1][key][1]
+        self.code = token_population[1][key][2]
+        self.status = token_population[1][key][3]
+        self.random_values = token_population[1][key][4]
+
+    def __del__(self):
+        print(f"Token {self.key} is being deleted!")
+
+    #who knows whether I will use this
+    def deactivate(self, token_population): #this is meant for when new token is created, it should 'deactivate' the tokens used for its creation
+        token_population[self.key][3] = 'used'
+        self.status = 'used'
