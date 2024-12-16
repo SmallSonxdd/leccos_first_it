@@ -46,7 +46,7 @@ def generate_T1_token(culture_or_open_world):
     token_code = generate_token_code()
 
     key = culture_or_open_world 
-    value = (traits, type, token_code, 'unused', f'Pos_number: {num_pos}. Pos_sd: {pos_sd}. Neg_number: {num_neg}. Neg_sd: {neg_sd}')
+    value = [traits, type, token_code, 'Activate', f'Pos_number: {num_pos}. Pos_sd: {pos_sd}. Neg_number: {num_neg}. Neg_sd: {neg_sd}']
     
     """"
     print(f'pos sample is {sample_pos}')                    Just
@@ -88,7 +88,7 @@ def generate_token_code():
 #Testing suite
 """
 print('<<<<')
-print(generate_T1_token('Piir-Bakka')) #prints generated dictionary of culture->(list of attributes, type, token code, status, random values)
+print(generate_T1_token('Piir-Bakka')) #prints generated dictionary of culture->[list of attributes, type, token code, status, random values]
 print(generate_T1_token('Piir-Bakka')['Piir-Bakka'][0]) #prints generated dictionary entry's list of attributes, which is used as reference how to create T2 token
 print(generate_T1_token('Piir-Bakka')['Piir-Bakka'][1]) #prints generated dictionary entry's type of token, which is used as reference for what type of T2 token is created
 print(generate_T1_token('Piir-Bakka')['Piir-Bakka'][2]) #prints generated dictionary entry's token code, which is used as reference for T2 creation access

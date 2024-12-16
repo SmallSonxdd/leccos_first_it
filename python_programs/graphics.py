@@ -118,6 +118,9 @@ class CustomEntry:
 
     def delete(self):
         self.entry.delete(0, len(self.entry.get()))
+    
+    def custom_get(self):
+        return self.entry.get()
 
 class GridWidget:
     def __init__(self, canvas, pos_x, pos_y, cell_width, cell_height):
@@ -200,12 +203,12 @@ class TokenWidget:
         name_text = self.token.key
         self.name_id = self.grid.create_rectangle(x, y + self.size, x + self.size, y + self.size + 20, fill='lightblue', outline='black')
         self.grid.create_text(x + self.size/2, y + self.size + 10, text=f'Name: {name_text}', fill='black')
-        if self.token.status == 'unused':
+        if self.token.status == 'Activate':
             status_color = 'green'
             status_text = 'Activate'
-        elif self.token.status == 'used':
+        elif self.token.status == 'Depleted':
             status_color = 'red'
-            status_text = 'Deactivated'
+            status_text = 'Depleted'
         else:
             raise Exception('Invalid token status')
         self.status_id = self.grid.create_rectangle(x, y + self.size + 20, x + self.size, y + self.size + 40, fill='lightblue', outline='black')
@@ -233,6 +236,14 @@ class Token:
         print(f"Token {self.key} is being deleted!")
 
     #who knows whether I will use this
-    def deactivate(self, token_population): #this is meant for when new token is created, it should 'deactivate' the tokens used for its creation
-        token_population[self.key][3] = 'used'
-        self.status = 'used'
+    #def deactivate(self, token_population): #this is meant for when new token is created, it should 'deactivate' the tokens used for its creation
+        #token_population[self.key][3] = 'Depleted'
+        #self.status = 'Depleted'
+
+class TarotWidget:
+    def __init__(self):
+        pass
+
+class Tarot:
+    def __init__(self):
+        pass

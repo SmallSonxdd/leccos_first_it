@@ -27,13 +27,60 @@ def redraw_forge(win, tokens_database):
     win.canvas.delete('all')
     token_one = CustomButton(win, 'First token', 'Some link', 200, 250, (100, 50))
     token_one.draw()
+    entry_token_one = CustomEntry(win.canvas, 200, 320, 100, 30)
+    win.widgets['entry_one'] = entry_token_one
     token_two = CustomButton(win, 'Second token', 'Some link', 500, 250, (100, 50))
     token_two.draw()
+    entry_token_two = CustomEntry(win.canvas, 500, 320, 100, 30)
+    win.widgets['entry_two'] = entry_token_two
     accept_forge = CustomButton(win, 'Forge!', 'Some link', 350, 400, (100, 50))
     accept_forge.draw()
+    accept_forge.bind_click(lambda: redraw_forge_process(win, tokens_database, entry_token_one.custom_get(), entry_token_two.custom_get()))
     back_button = CustomButton(win, 'Go back', 'Some link', 700, 550, (85, 35))
     back_button.draw()
     back_button.bind_click(lambda: redraw_back_main_page(win, tokens_database))
+    pass
+
+def redraw_forge_process(win, tokens_database, token_one, token_two):
+    if token_one == token_two:
+        print("You've tried putting in the same token twice. Try again!")
+        return
+    token_one_existence = False
+    token_two_existence = False
+    for key in tokens_database[0]:
+        if tokens_database[1][key][2] == token_one:
+            token_one_existence = True
+            placeholder_token_one = key
+        if tokens_database[1][key][2] == token_two:
+            token_two_existence = True
+            placeholder_token_two = key
+    if token_one_existence == False or token_two_existence == False:
+        print(f'First token is {token_one_existence} and second token is {token_two_existence}')
+        return
+    token_one_validity = True
+    token_two_validity = True
+    if tokens_database[1][placeholder_token_one][3] == 'Depleted':
+        print('First token invalid!')
+        token_one_validity = False
+    if tokens_database[1][placeholder_token_two][3] == 'Depleted':
+            token_two_validity = False
+            print('Second token invalid!')
+    if token_one_validity == False or token_two_validity == False:
+        print(f"First token's validity is {token_one_validity} and second token's validity is {token_two_validity}")
+        return
+    else:
+        print('Both tokens are valid and we can proceed!')
+    #here's the fun part
+    win.canvas.delete('all')
+    clean_widgets(win)
+
+    #Back button
+    back_button = CustomButton(win, 'Go back', 'Some link', 700, 550, (85, 35))
+    back_button.draw()
+    back_button.bind_click(lambda: redraw_back_forge(win, tokens_database))
+    
+
+    
     pass
 
 def redraw_collection(win, tokens_database):
@@ -50,14 +97,14 @@ def redraw_collection(win, tokens_database):
     my_grid.add_multiple_items(list_of_token_widget_instances)
     my_grid.draw()
 
-    #Scrollbar
+    #Scrollbar - only works when mouse is over it for scrollwheel with mouse, up and down buttons work properly
     scrollbar = CustomScrollbar(win.canvas, "vertical", 700, 15, 85, 470)
     scrollbar.draw()
     scrollbar.set_command(frame_grid.canvas.yview)
     frame_grid.canvas.config(yscrollcommand=scrollbar.get_scrollbar().set)
     win.widgets['scrollbar'] = scrollbar
 
-    #Search bar
+    #Search bar - currently doesn't "search" the frame or the grid for particular tokens
     search_entry = CustomEntry(win.canvas, 15, 15, 630, 30)
     win.widgets['search_entry'] = search_entry
 
@@ -70,7 +117,7 @@ def redraw_collection(win, tokens_database):
     back_button = CustomButton(win, 'Go back', 'Some link', 700, 500, (85, 85))
     back_button.draw()
     back_button.bind_click(lambda: redraw_back_main_page(win, tokens_database, list_of_token_instances))
-
+    pass
     
 
 def list_my_token_instances(list, tokens_database):
@@ -88,18 +135,28 @@ def list_my_token_widget_instances(list_of_widgets, list_of_tokens, grid):
 def redraw_back_main_page(win, tokens_database, token_instances=None):
     if type(token_instances) is list:
         clean_list_of_token_instances(token_instances) 
-    for widget in list(win.widgets.values()):
-        widget.destroy()
-        del widget
+    clean_widgets(win)
     win.widgets.clear()
     win.canvas.delete('all')
     gc.collect()
     draw_buttons(win, tokens_database)
     pass
 
+def redraw_back_forge(win, tokens_database):
+    clean_widgets(win)
+    redraw_forge(win, tokens_database)
+    pass
+
 def clean_list_of_token_instances(list):
     for item in list:
         del item
     del list
+    gc.collect()
+    pass
+
+def clean_widgets(win):
+    for widget in list(win.widgets.values()):
+        widget.destroy()
+        del widget
     gc.collect()
     pass
