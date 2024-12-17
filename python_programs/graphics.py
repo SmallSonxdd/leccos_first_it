@@ -38,17 +38,17 @@ class CustomFrame:
         self.frame = Frame(self.parent, width=self.width, height=self.height)
         self.frame.place(x=self.pos_x, y=self.pos_y)
 
+        self.canvas = Canvas(self.frame, width=self.width, height=self.height)
+        self.canvas.pack(side='left', fill='both', expand=True)
+        self.inner_frame = Frame(self.canvas)
+        self.canvas.create_window((0,0), window=self.inner_frame, anchor='nw')
+        self.inner_frame.bind("<Configure>", self.on_frame_configure)
+
         if self.scrollable:
-            self.canvas = Canvas(self.frame, width=self.width, height=self.height)
-            self.canvas.pack(side='left', fill='both', expand=True)
-            self.inner_frame = Frame(self.canvas)
-            self.canvas.create_window((0,0), window=self.inner_frame, anchor='nw')
             self.canvas.configure(scrollregion=(0, 0, self.width, self.height))
-            self.inner_frame.bind("<Configure>", self.on_frame_configure)
+            
         
-        else:
-            self.canvas = None
-            self.inner_frame = self.frame
+
     
     def on_frame_configure(self, event):
         if self.scrollable:
@@ -123,18 +123,18 @@ class CustomEntry:
         return self.entry.get()
 
 class GridWidget:
-    def __init__(self, canvas, pos_x, pos_y, cell_width, cell_height):
+    def __init__(self, canvas, pos_x, pos_y, cell_width, cell_height, cols):
         self.canvas = canvas
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.cell_width = cell_width
         self.cell_height = cell_height
+        self.cols = cols
         
         self.width = canvas.winfo_width()
         self.height = canvas.winfo_height()
 
         self.rows = 0
-        self.cols = 3
         self.grid_items = []
     
     def add_single_item(self, item):
@@ -191,8 +191,6 @@ class TokenWidget:
         self.name_id = None
         self.status_id = None
         self.code_id = None
-        self.tooltip_id = None
-        self.text_id = None
 
     def draw(self, x, y):
         self.square_id = self.grid.create_rectangle(x, y, x + self.size, y + self.size, fill='lightgrey', outline='black')
@@ -222,7 +220,6 @@ class TokenWidget:
     def on_hover_exit(self, event):
         self.grid.itemconfig(self.square_id, fill="lightgrey")
 
-
 class Token:
     def __init__(self, key, token_population):
         self.key = key
@@ -241,9 +238,65 @@ class Token:
         #self.status = 'Depleted'
 
 class TarotWidget:
-    def __init__(self):
-        pass
+    def __init__(self, grid, size_x, size_y, tarot):
+        self.grid = grid
+        self.size_x = size_x
+        self.size_y = size_y
+        self.tarot = tarot
+        
+        self.choice_id = None
+        self.choice_text = 'What...will...you...choose...?'
+        self.square_id = None
+        self.position_id = None
+        self.text_id = None
+        self.tarot_attributes_id = None
+        self.tarot_attributes_text = ''
+
+    def draw(self, x, y):
+        self.choice_id = self.grid.create_text(400, 40, text=self.choice_text, fill='black', font=("Helvetica", 25))
+
+        name_text = self.tarot.tarot_name
+        self.text_id = self.grid.create_text(x + self.size_x/2, y + 70, text=name_text, fill='black')
+
+        self.square_id = self.grid.create_rectangle(x, y + 90, x + self.size_x, y + self.size_y + 90, fill='lightgrey', outline='black')
+
+        self.grid.tag_bind(self.square_id, "<Enter>", self.on_hover)
+        self.grid.tag_bind(self.square_id, "<Leave>", self.on_hover_exit)
+
+        tarot_position = self.tarot.tarot_position
+        self.position_id = self.grid.create_text(x + self.size_x/2, y + self.size_y + 110, text=tarot_position, fill='black')
+
+        self.tarot_attributes_id = self.grid.canvas.create_text(400, 500, text=self.tarot_attributes_text, fill='black')
+    
+    def on_hover(self, event):
+        self.grid.itemconfig(self.square_id, fill="yellow")
+        self.tarot_attributes_text = self.tarot.attributes
+        self.grid.itemconfig(self.tarot_attributes_id, text=self.tarot_attributes_text)
+    
+    def on_hover_exit(self, event):
+        self.grid.itemconfig(self.square_id, fill="lightgrey")
+        self.tarot_attributes_text = ''
+        self.grid.itemconfig(self.tarot_attributes_id, text=self.tarot_attributes_text)
+    
+    def bind_click(self, action):
+        def on_click(event):
+            x1, y1, x2, y2 = self.grid.canvas.bbox(self.square_id)
+            if x1 <= event.x <= x2 and y1 <= event.y <= y2:
+                action()
+        self.grid.tag_bind(self.square_id, "<Button-1>", on_click)
+
+
 
 class Tarot:
-    def __init__(self):
-        pass
+    def __init__(self, tarot, tarot_jpg):
+        self.tarot_name = tarot[0]
+        if tarot[1] == 0:
+            self.tarot_position = 'Upright'
+        elif tarot[1] == 1:
+            self.tarot_position = 'Reversed'
+        else:
+            raise Exception('Tarot is neither Upright nor Reversed')
+        #self.tarot_pos = tarot_pos_attributes_dict[tarot_name] different possible implementation, might come back to this later
+        #self.tarot_neg = tarot_neg_attributes_dict[tarot_name]
+        self.attributes = tarot[2]
+        self.tarot_jpg = tarot_jpg

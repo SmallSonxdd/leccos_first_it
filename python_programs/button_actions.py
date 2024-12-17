@@ -1,8 +1,12 @@
 import subprocess
 import gc
 from graphics import *
+from tarot_generation import *
+from T2_generation import *
 
 def draw_buttons(win, tokens_database):
+    win.canvas.delete('all')
+    clean_widgets(win)
     invitations = CustomButton(win, 'Invitations', "https://objkt.com/collections/KT1MFqZPJFhg5rUcW1VFxKrEKASMfsVg8Ukc",
     200, 250, (100, 50))
     invitations.draw()
@@ -35,13 +39,14 @@ def redraw_forge(win, tokens_database):
     win.widgets['entry_two'] = entry_token_two
     accept_forge = CustomButton(win, 'Forge!', 'Some link', 350, 400, (100, 50))
     accept_forge.draw()
-    accept_forge.bind_click(lambda: redraw_forge_process(win, tokens_database, entry_token_one.custom_get(), entry_token_two.custom_get()))
+    accept_forge.bind_click(lambda: redraw_forge_process_tokens(win, tokens_database, entry_token_one.custom_get(), entry_token_two.custom_get()))
     back_button = CustomButton(win, 'Go back', 'Some link', 700, 550, (85, 35))
     back_button.draw()
     back_button.bind_click(lambda: redraw_back_main_page(win, tokens_database))
     pass
 
-def redraw_forge_process(win, tokens_database, token_one, token_two):
+def redraw_forge_process_tokens(win, tokens_database, token_one, token_two):
+    #this will need to be turned into helper functions to clean up
     if token_one == token_two:
         print("You've tried putting in the same token twice. Try again!")
         return
@@ -70,17 +75,44 @@ def redraw_forge_process(win, tokens_database, token_one, token_two):
         return
     else:
         print('Both tokens are valid and we can proceed!')
+    redraw_forge_tarot(win, tokens_database, placeholder_token_one, placeholder_token_two)    
+    pass
+
     #here's the fun part
+def redraw_forge_tarot(win, tokens_database, token_one, token_two):    
     win.canvas.delete('all')
     clean_widgets(win)
+
+    list_of_tarots = list_my_tarot_instances([], populate_tarots(3))
+    #Grid for tarot widgets
+    my_grid = GridWidget(win.canvas, 50, 0, 250, 500, len(list_of_tarots))
+    list_of_tarot_widget_instances = list_my_tarot_widget_instances([], list_of_tarots, my_grid)
+    my_grid.add_multiple_items(list_of_tarot_widget_instances)
+    my_grid.draw()
+    for item in my_grid.grid_items:
+        item.bind_click(lambda tarot=item.tarot: redraw_forge_finalisation(win, tokens_database, token_one, token_two, tarot))
 
     #Back button
     back_button = CustomButton(win, 'Go back', 'Some link', 700, 550, (85, 35))
     back_button.draw()
     back_button.bind_click(lambda: redraw_back_forge(win, tokens_database))
+    pass
     
+def redraw_forge_finalisation(win, tokens_database, token_one, token_two, tarot):
+    win.canvas.delete('all')
+    new_token = generate_T2_token(tokens_database, token_one, token_two, tarot)
+    tokens_database[0].append(new_token[0])
+    tokens_database[1][new_token[0]] = new_token[1:]
 
+    #Back button1
+    back_button = CustomButton(win, 'Go back to the forge!', 'Some link', 15, 550, (170, 35))
+    back_button.draw()
+    back_button.bind_click(lambda: redraw_forge(win, tokens_database))
     
+    #Back button2
+    back_button = CustomButton(win, 'Go back to main menu!', 'Some link', 615, 550, (170, 35))
+    back_button.draw()
+    back_button.bind_click(lambda: draw_buttons(win, tokens_database))
     pass
 
 def redraw_collection(win, tokens_database):
@@ -92,7 +124,7 @@ def redraw_collection(win, tokens_database):
     win.widgets['frame_grid'] = frame_grid
     
     #Grid for token widgets
-    my_grid = GridWidget(frame_grid.canvas, 0, 0, 226, 300)
+    my_grid = GridWidget(frame_grid.canvas, 0, 0, 226, 300, 3)
     list_of_token_widget_instances = list_my_token_widget_instances([], list_of_token_instances, my_grid)
     my_grid.add_multiple_items(list_of_token_widget_instances)
     my_grid.draw()
@@ -129,6 +161,18 @@ def list_my_token_instances(list, tokens_database):
 def list_my_token_widget_instances(list_of_widgets, list_of_tokens, grid):
     for item in list_of_tokens:
         custom_widget_instance = TokenWidget(grid, 223, item)
+        list_of_widgets.append(custom_widget_instance)
+    return list_of_widgets
+
+def list_my_tarot_instances(list, list_of_tarots_3_tuples):
+    for item in list_of_tarots_3_tuples:
+        custom_tarot_instance = Tarot(item, f'{item[0]}.jpg')
+        list.append(custom_tarot_instance)
+    return list
+
+def list_my_tarot_widget_instances(list_of_widgets, list_of_tarots, grid):
+    for item in list_of_tarots:
+        custom_widget_instance = TarotWidget(grid, 200, 350, item)
         list_of_widgets.append(custom_widget_instance)
     return list_of_widgets
 

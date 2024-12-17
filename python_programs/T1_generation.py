@@ -8,7 +8,7 @@ def populate_T1_tokens(number_of_cultures, number_of_open_world):
     for culture_or_open_world in cultures_and_open_worlds_chosen:
         key, value = generate_T1_token(culture_or_open_world)
         dict_of_tokens[key] = value
-    return (cultures_and_open_worlds_chosen, dict_of_tokens)
+    return [cultures_and_open_worlds_chosen, dict_of_tokens]
 
 
 def generate_T1_token(culture_or_open_world):
