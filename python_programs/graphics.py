@@ -1,6 +1,8 @@
 from tkinter import Tk, BOTH, Canvas, Scrollbar, Entry, Frame
+import os
 import time
 import random
+"""from pillow import Image, ImageTk"""
 
 
 class Window:
@@ -251,6 +253,7 @@ class TarotWidget:
         self.text_id = None
         self.tarot_attributes_id = None
         self.tarot_attributes_text = ''
+        self.tk_image = None
 
     def draw(self, x, y):
         self.choice_id = self.grid.create_text(400, 40, text=self.choice_text, fill='black', font=("Helvetica", 25))
@@ -259,6 +262,15 @@ class TarotWidget:
         self.text_id = self.grid.create_text(x + self.size_x/2, y + 70, text=name_text, fill='black')
 
         self.square_id = self.grid.create_rectangle(x, y + 90, x + self.size_x, y + self.size_y + 90, fill='lightgrey', outline='black')
+
+        """image_path = self.tarot.tarot_jpg  # Full path to the image
+        img = Image.open(image_path)
+        self.tk_image = ImageTk.PhotoImage(img)
+
+        center_x = x + self.size_x / 2
+        center_y = y + 90 + (self.size_y / 2)
+
+        self.image_id = self.grid.create_image(center_x, center_y, image=self.tk_image)"""
 
         self.grid.tag_bind(self.square_id, "<Enter>", self.on_hover)
         self.grid.tag_bind(self.square_id, "<Leave>", self.on_hover_exit)
@@ -299,4 +311,5 @@ class Tarot:
         #self.tarot_pos = tarot_pos_attributes_dict[tarot_name] different possible implementation, might come back to this later
         #self.tarot_neg = tarot_neg_attributes_dict[tarot_name]
         self.attributes = tarot[2]
-        self.tarot_jpg = tarot_jpg
+        self.image_dir = "/home/admin1620/leccos/major+minor_arcana_jpgs"
+        self.tarot_jpg = os.path.join(self.image_dir, f"{self.tarot_name}.jpg")

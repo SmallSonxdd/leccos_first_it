@@ -89,6 +89,9 @@ def redraw_forge_tarot(win, tokens_database, token_one, token_two):
     list_of_tarot_widget_instances = list_my_tarot_widget_instances([], list_of_tarots, my_grid)
     my_grid.add_multiple_items(list_of_tarot_widget_instances)
     my_grid.draw()
+    print(my_grid.grid_items[0].tarot.tarot_jpg)
+    print(my_grid.grid_items[1].tarot.tarot_jpg)
+    print(my_grid.grid_items[2].tarot.tarot_jpg)
     for item in my_grid.grid_items:
         item.bind_click(lambda tarot=item.tarot: redraw_forge_finalisation(win, tokens_database, token_one, token_two, tarot))
 
